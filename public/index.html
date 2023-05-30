@@ -1,0 +1,30 @@
+
+<body>
+  <h1>Heart Rate Monitor</h1>
+  <p id="bpmDisplay">Current BPM: </p>
+
+  <!-- Include the Socket.IO library -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+  <script>
+    // Connect to the server using Socket.IO
+    const socket = io();
+
+    // Receive the initial BPM value from the server
+    socket.on('bpmUpdate', (bpm) => {
+      console.log('Received BPM update:', bpm);
+      updateBPMDisplay(bpm); // Update the BPM display on the page
+    });
+
+
+
+    // Function to update the BPM display on the page
+    function updateBPMDisplay(bpm) {
+      const bpmDisplay = document.getElementById('bpmDisplay');
+      bpmDisplay.textContent = 'Current BPM: ' + bpm;
+    }
+
+    // Function to send the BPM value to the server
+
+  </script>
+</body>
