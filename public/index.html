@@ -1,30 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Heart Rate Monitor</title>
+  <style>
+  body {
+  font-family: Arial, sans-serif;
+  background-color: #f7f7f7;
+  padding: 20px;
+}
 
+h1 {
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#gaugeContainer {
+  width: 300px;
+  height: 200px;
+  margin: 0 auto;
+  text-align: center;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  padding-top: 70px;
+}
+
+#gaugeContainer::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background-color: #e7e7e7;
+  z-index: -1;
+}
+
+#gaugeContainer::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #fff;
+  z-index: -1;
+}
+
+#gaugeValue {
+  font-size: 36px;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+#gaugeUnit {
+  font-size: 18px;
+  color: #777;
+}
+
+#category {
+  text-align: center;
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 18px;
+  color: #555;
+}
+
+
+  </style>
+  <!-- Include the JustGage library -->
+<!-- Raphael must be included before justgage -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.4/raphael-min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/justgage/1.2.9/justgage.min.js"></script>
+</head>
 <body>
   <h1>Heart Rate Monitor</h1>
-  <p id="bpmDisplay">Current BPM: </p>
+  <div id="gaugeContainer">
+    <!-- Gauge content goes here -->
+  </div>
+  <div id="category">Category: Normal</div>
 
-  <!-- Include the Socket.IO library -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-
   <script>
     // Connect to the server using Socket.IO
     const socket = io();
 
-    // Receive the initial BPM value from the server
-    socket.on('bpmUpdate', (bpm) => {
-      console.log('Received BPM update:', bpm);
-      updateBPMDisplay(bpm); // Update the BPM display on the page
+    // Create the gauge
+    const gauge = new JustGage({
+      id: "gaugeContainer",
+      value: 0,
+      min: 0,
+      max: 200,
+      title: "BPM",
+      label: "Beats per Minute"
     });
 
+    // Receive the initial BPM value from the server
+    socket.on('bpmUpdate', (val) => {
+      console.log('Received BPM update:', val);
+      document.getElementById('category').innerHTML = val.category;
+      
+      updateGauge(val.bpm);
+    });
 
-
-    // Function to update the BPM display on the page
-    function updateBPMDisplay(bpm) {
-      const bpmDisplay = document.getElementById('bpmDisplay');
-      bpmDisplay.textContent = 'Current BPM: ' + bpm;
+    // Function to update the gauge value
+    function updateGauge(bpm) {
+      gauge.refresh(bpm); // Refresh the gauge with the new BPM value
     }
 
-    // Function to send the BPM value to the server
+    // // Function to send the BPM value to the server
+    function sendBPMValue(bpm) {
+      socket.emit('bpmValue', bpm);
+    }
 
+    // // Function to submit the BPM value to the server
+    function submitBPM() {
+      const bpmInput = document.getElementById('bpmInput');
+      const bpmValue = parseInt(bpmInput.value);
+      if (!isNaN(bpmValue)) {
+        sendBPMValue(bpmValue);
+      }
+      bpmInput.value = '';
+    }
   </script>
 </body>
+</html>
+

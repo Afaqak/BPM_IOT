@@ -8,6 +8,7 @@ const server=http.createServer(app)
 const io=socketIo(server)
 const bodyParser = require('body-parser');
 let bpm = 0;
+let category = ''
 
 
 // Parse incoming request bodies
@@ -16,8 +17,11 @@ app.use(express.static(path.join(__dirname,'../public')))
 
 // Endpoint to receive BPM data
 app.post('/data', (req, res) => {
+
+  console.log(req.body)
     bpm = req.body.bpm;  // Extract the BPM value from the request body
     console.log(bpm);
+    category = req.body.category;
 
   // Perform any processing or storage of the BPM value here
   res.status(200);
@@ -25,40 +29,19 @@ app.post('/data', (req, res) => {
   res.send('BPM received');
 });
 
-app.get('/', (req, res) => {
-  const bpm = req.body.bpm;  // Extract the BPM value from the request body
-  console.log(req.body.bpm);
-
-
-
-  // Perform any processing or storage of the BPM value here
-  res.status(200);
-  // Send a response back to the ESP8266
-  res.send(`
-  <html>
-  <head>
-  <title>Heart Rate Monitor</title>
-  </head>
-  <body>
-  <h1>Heart Rate Monitor</h1>
-  <p>Current BPM: ${bpm}</p>
-  </body>
-  </html>
-
-  `);
-});
 
 
 io.on('connection', (socket) => {
   console.log('Client connected');
 
   // Send the initial BPM value to the client
-  socket.emit('bpmUpdate', bpm);
+  socket.emit('bpmUpdate', { bpm: bpm, category: category });
   console.log('emitted bpmUpdate', bpm);
 
   // Send the updated BPM value to the client every second
   const sendBPMUpdate = setInterval(() => {
-    socket.emit('bpmUpdate', bpm);
+    socket.emit('bpmUpdate', { bpm: bpm, category: category });
+
     console.log('emitted bpmUpdate', bpm);
   }, 1000);
 
